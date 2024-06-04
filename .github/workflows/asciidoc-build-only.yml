@@ -1,24 +1,24 @@
-name: Generate Documentation from ASCIIDoc
-
-on:
-  push:
-    branches-ignore: [ master ]
-  pull_request:
-    branches: [ master ]
-
 jobs:
   checkout-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    steps:
+    - continue-on-error: true
+      name: Checkout
+      uses: actions/checkout@master
+    - continue-on-error: true
+      name: Set up java
+      uses: actions/setup-java@v2
+      with:
+        distribution: zulu
+        java-version: ${{ matrix.java }}
+    - continue-on-error: true
+      name: Build ASCIIDoc with Gradle
+      run: ./gradlew clean asciidoctor
     strategy:
       matrix:
-        java: [ 11 ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-      - name: Set up java
-        uses: actions/setup-java@v2
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'zulu'
-      - name: Build ASCIIDoc with Gradle
-        run: ./gradlew clean asciidoctor
+        java:
+        - 11
+name: Generate Documentation from ASCIIDoc
+on:
+  repository_dispatch:
+    types: trigger-ga___asciidoc-build-only.yml

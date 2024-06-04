@@ -1,29 +1,31 @@
-name: Generate Github Pages from ASCIIDoc
-
-on:
-  push:
-    branches: [ master ]
-
-permissions:
-  contents: write
-
 jobs:
   checkout-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    steps:
+    - continue-on-error: true
+      name: Checkout
+      uses: actions/checkout@master
+    - continue-on-error: true
+      name: Set up java
+      uses: actions/setup-java@v2
+      with:
+        distribution: zulu
+        java-version: ${{ matrix.java }}
+    - continue-on-error: true
+      name: Build ASCIIDoc with Gradle
+      run: ./gradlew clean asciidoctor
+    - continue-on-error: true
+      name: Simple deploy with git
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: build/docs/asciidoc/en/
     strategy:
       matrix:
-        java: [ 11 ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-      - name: Set up java
-        uses: actions/setup-java@v2
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'zulu'
-      - name: Build ASCIIDoc with Gradle
-        run: ./gradlew clean asciidoctor
-      - name: Simple deploy with git
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: build/docs/asciidoc/en/
+        java:
+        - 11
+name: Generate Github Pages from ASCIIDoc
+on:
+  repository_dispatch:
+    types: trigger-ga___asciidoc.yml
+permissions:
+  contents: write
